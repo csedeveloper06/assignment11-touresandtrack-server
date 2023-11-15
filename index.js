@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,6 +32,8 @@ async function run() {
 
     const touristServiceCollection = client.db('touristPlans').collection('touristServices');
     const popularTouristServiceCollection = client.db('touristPlans').collection('popularTouristServices');
+    const bookingCollection = client.db('touristPlans').collection('bookings');
+    const manageServicesCollection = client.db('touristPlans').collection('manageServices');
 
     app.get('/touristServices', async(req,res) => {
         const cursor = touristServiceCollection.find();
@@ -43,6 +45,64 @@ async function run() {
         const result = await cursor.toArray();
         res.send(result);
     })
+
+      app.get('/touristServices/:id', async(req,res) => {
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)};
+        const result = await touristServiceCollection.findOne(query);
+        res.send(result);
+    })
+
+    app.get('/touristServices/:id', async( req, res )=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+
+      const options = {
+        // Include only the `title` and `imdb` fields in the returned document
+        projection: { serviceName: 1, serviceImage: 1, servicePrice: 1, serviceProviderEmail: 1 }
+      };
+
+      const result = await touristServiceCollection.findOne( query, options );
+      res.send(result);
+    })
+
+    // bookings
+
+    app.get('/bookings', async(req , res) => {
+      let query = {};
+      if(req.query?.email){
+        query = { email: req.query.email }
+      }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.post('/bookings', async (req, res) => {
+      const bookings = req.body;
+      console.log(bookings);
+      const result = await bookingCollection.insertOne(bookings);
+      res.send(result);
+    });
+
+
+    app.get('/manageServices', async(req , res) => {
+      let query = {};
+      if(req.query?.email){
+        query = { email: req.query.email }
+      }
+      const result = await manageServicesCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    app.post('/manageServices', async (req, res) => {
+        const manageServices = req.body;
+        console.log(manageServices);
+        const result = await manageServicesCollection.insertOne(manageServices);
+        res.send(result);
+    });
+
+
 
       app.post('/touristServices', async(req,res) =>{
         const newService = req.body;
