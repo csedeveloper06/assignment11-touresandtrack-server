@@ -88,8 +88,10 @@ async function run() {
     app.get('/manageServices', async(req , res) => {
       let query = {};
       if(req.query?.email){
-        query = { email: req.query.email }
+        query = { 
+          serviceProviderEmail: req.query.email }
       }
+      console.log(req.query.email);
       const result = await manageServicesCollection.find(query).toArray();
       res.send(result);
     })
@@ -104,11 +106,23 @@ async function run() {
 
 
 
-      app.post('/touristServices', async(req,res) =>{
+    app.post('/touristServices', async(req,res) =>{
         const newService = req.body;
         console.log(newService);
         const result = await touristServiceCollection.insertOne(newService);
         res.send(result);
+    })
+
+    app.put('/manageServices/:id', async(req,res)=> {
+        const updatedManageService = req.body;
+        
+    })
+
+    app.delete('/manageServices/:id', async(req,res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await manageServicesCollection.deleteOne(query);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
