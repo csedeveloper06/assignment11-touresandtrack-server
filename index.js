@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
 
     const touristServiceCollection = client.db('touristPlans').collection('touristServices');
     const popularTouristServiceCollection = client.db('touristPlans').collection('popularTouristServices');
@@ -91,7 +91,6 @@ async function run() {
         query = { 
           serviceProviderEmail: req.query.email }
       }
-      console.log(req.query.email);
       const result = await manageServicesCollection.find(query).toArray();
       res.send(result);
     })
@@ -113,9 +112,26 @@ async function run() {
         res.send(result);
     })
 
-    app.put('/manageServices/:id', async(req,res)=> {
+    app.patch('/manageServices/:id', async( req,res )=> {
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)}
         const updatedManageService = req.body;
-        
+        console.log(updatedManageService);
+
+        const updateDoc = {
+          $set: {
+            status: updatedManageService.status
+          },
+        };
+        const result = await manageServicesCollection.updateOne(filter, updateDoc);
+        res.send(result);
+    })
+
+    app.get('/touristServices/:id', async( req,res ) =>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await touristServiceCollection.findOne(query);
+      res.send(result);
     })
 
     app.delete('/manageServices/:id', async(req,res) => {
@@ -126,8 +142,8 @@ async function run() {
     })
 
     // Send a ping to confirm a successful connection
-    //await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
