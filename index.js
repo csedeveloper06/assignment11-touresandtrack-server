@@ -53,18 +53,7 @@ async function run() {
         res.send(result);
     })
 
-    app.get('/touristServices/:id', async( req, res )=> {
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-
-      const options = {
-        // Include only the `title` and `imdb` fields in the returned document
-        projection: { serviceName: 1, serviceImage: 1, servicePrice: 1, serviceProviderEmail: 1 }
-      };
-
-      const result = await touristServiceCollection.findOne( query, options );
-      res.send(result);
-    })
+ 
 
     // bookings
 
@@ -91,7 +80,14 @@ async function run() {
         query = { 
           serviceProviderEmail: req.query.email }
       }
-      const result = await manageServicesCollection.find(query).toArray();
+      const result = await touristServiceCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.get('/manageServices/:id', async( req, res )=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await manageServicesCollection.findOne( query);
       res.send(result);
     })
 
@@ -104,6 +100,23 @@ async function run() {
     });
 
 
+    app.put( '/manageServices/:id', async( req,res )=> {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedService = req.body;
+      const service = {
+        $set: {
+          serviceImage: updatedService.serviceImage,
+          serviceName:updatedService.serviceName,
+          servicePrice:updatedService.servicePrice,
+          serviceDescription:updatedService.serviceDescription,
+          serviceArea:updatedService.serviceArea
+        }
+      }
+      const result = await manageServicesCollection.updateMany(filter,service,options);
+      res.send(result);
+    })
 
     app.post('/touristServices', async(req,res) =>{
         const newService = req.body;
