@@ -66,6 +66,17 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/bookings', async (req,res)=> {
+      let query = {};
+      if(req.query?.email){
+        query = {
+          serviceProviderEmail: req.query.email
+        }
+        const result = await bookingCollection.find(query).toArray();
+        res.send(result);
+      }
+    })
+
     app.post('/bookings', async (req, res) => {
       const bookings = req.body;
       console.log(bookings);
@@ -90,6 +101,9 @@ async function run() {
       const result = await manageServicesCollection.findOne( query);
       res.send(result);
     })
+
+
+
 
 
     app.post('/manageServices', async (req, res) => {
